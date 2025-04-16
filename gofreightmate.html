@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outlook Web 原型 - 海運進口 + GoFreightMate (修正圖標顯示)</title>
+    <title>Outlook Web 原型 - 海運進口 + GoFreightMate (修正 Lucide 載入時機)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 自訂滾動條樣式 */
@@ -208,6 +208,8 @@
         let currentOpenEmail = null;
         let isGoFreightMatePanelOpen = false;
         let analysisTimeoutId = null;
+        let lucideCheckInterval = null; // Interval timer for Lucide check
+        let lucideCheckTimeout = null; // Timeout for Lucide check
 
         // --- Helper Functions ---
         function updateUnreadCount() {
@@ -224,8 +226,13 @@
                     </p>
                 </div>`;
              // Ensure icon is rendered immediately after adding HTML
+             // Check if lucide is available before calling
              if (typeof lucide !== 'undefined') {
-                 lucide.createIcons();
+                 try {
+                    lucide.createIcons();
+                 } catch (error) {
+                     console.error("Error creating dynamic Lucide icon (loader):", error);
+                 }
              } else {
                  console.error("Lucide not available when showing loading indicator.");
              }
@@ -367,27 +374,39 @@
         document.addEventListener('DOMContentLoaded', (event) => {
             console.log("DOMContentLoaded event fired.");
 
-            // Simplified Lucide Initialization
-            try {
-                 if (typeof lucide !== 'undefined') {
-                     lucide.createIcons();
-                     console.log("Lucide icons initialized on DOMContentLoaded.");
-                 } else {
-                      console.error("Lucide object is not defined on DOMContentLoaded!");
-                      // Attempt on window.load as a last resort, though less ideal
-                      window.addEventListener('load', () => {
-                         console.log("Attempting Lucide init on window.load");
-                         if (typeof lucide !== 'undefined') {
-                             lucide.createIcons();
-                             console.log("Lucide icons initialized on window.load.");
-                         } else {
-                             console.error("Lucide library still not loaded on window.load!");
-                         }
-                      });
+            // --- Robust Lucide Initialization with Polling ---
+            const maxWaitTime = 5000; // Max wait 5 seconds for Lucide
+            const checkInterval = 100; // Check every 100ms
+            let elapsedTime = 0;
+
+            lucideCheckInterval = setInterval(() => {
+                elapsedTime += checkInterval;
+                // console.log("Checking for Lucide..."); // Optional: noisy log
+
+                if (typeof lucide !== 'undefined') {
+                    console.log("Lucide object found after", elapsedTime, "ms.");
+                    clearInterval(lucideCheckInterval); // Stop polling
+                    if(lucideCheckTimeout) clearTimeout(lucideCheckTimeout); // Clear timeout timer
+                    try {
+                        lucide.createIcons();
+                        console.log("Lucide icons initialized successfully.");
+                    } catch (error) {
+                        console.error("Error initializing Lucide icons:", error);
+                    }
+                } else if (elapsedTime >= maxWaitTime) {
+                     console.error("Lucide library failed to load within", maxWaitTime / 1000, "seconds.");
+                     clearInterval(lucideCheckInterval); // Stop polling
+                     if(lucideCheckTimeout) clearTimeout(lucideCheckTimeout); // Clear timeout timer
+                }
+            }, checkInterval);
+
+            // Set a timeout to ensure the interval stops even if lucide never loads
+            lucideCheckTimeout = setTimeout(() => {
+                 if (lucideCheckInterval) { // Check if interval is still running
+                     console.error("Lucide check timed out after", maxWaitTime / 1000, "seconds.");
+                     clearInterval(lucideCheckInterval);
                  }
-            } catch (error) {
-                console.error("Error initializing Lucide icons:", error);
-            }
+            }, maxWaitTime + 50); // Add a small buffer to timeout
 
 
             displayEmails(); // Populate email list
@@ -413,3 +432,4 @@
     </script>
 </body>
 </html>
+
