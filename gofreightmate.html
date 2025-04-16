@@ -12,6 +12,20 @@
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
 
+        /* SVG 圖標基礎樣式 (取代 .lucide class) */
+        .svg-icon {
+            width: 1.1rem;
+            height: 1.1rem;
+            stroke-width: 2;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+            fill: none; /* 大部分 Lucide 圖標不需要填充 */
+            stroke: currentColor; /* 預設使用文字顏色 */
+        }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
         /* Lucide 圖標樣式 */
         .lucide { width: 1.1rem; height: 1.1rem; stroke-width: 2; display: inline-block; vertical-align: middle; margin-right: 0.5rem; }
         .animate-spin { animation: spin 1s linear infinite; }
@@ -67,9 +81,9 @@
 
     <aside id="sidebar" class="w-64 bg-[#F3F2F1] border-r border-gray-300 flex flex-col flex-shrink-0">
          <div id="sidebar-header" class="p-4 flex items-center space-x-2 border-b border-gray-300 flex-shrink-0">
-             <button id="sidebar-toggle-button" class="p-1 hover:bg-gray-200 rounded">
-                 <i data-lucide="menu" class="text-gray-600 !mr-0"></i>
-             </button>
+            <button id="sidebar-toggle-button" class="p-1 hover:bg-gray-200 rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-icon text-gray-600 !mr-0"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+            </button>
             <span id="outlook-title" class="text-lg font-semibold text-gray-800">Outlook</span>
         </div>
 
